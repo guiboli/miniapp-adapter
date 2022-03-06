@@ -1313,7 +1313,6 @@ function addEventListener(type, listener) {
 
   this['on' + type] = function () {
     var event = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    console.log("[app debug] ~ file: Image.js ~ line 10 ~ addEventListener ~ event", event);
     listener.call(_this, event);
   };
 }
