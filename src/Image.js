@@ -1,6 +1,21 @@
 import * as Mixin from './util/mixin'
-import HTMLImageElement from './HTMLImageElement'
 import { _canvas } from './Canvas'
+
+function addEventListener(type, listener) {
+	if (typeof listener !== 'function') {
+		return;
+	}
+
+	this['on' + type] = (event = {}) => {
+		listener.call(this, event)
+	}
+}
+
+function removeEventListener(type, listener) {
+	if (this['on' + type] === listener) {
+		this['on' + type] = null;
+	}
+}
 
 export default function Image() {
 	let canvas = _canvas;
@@ -9,14 +24,14 @@ export default function Image() {
 	}
 	const image = canvas.createImage();
 
-	// image.__proto__.__proto__.__proto__ = new HTMLImageElement();
-
 	if (!('tagName' in image)) {
 		image.tagName = 'IMG'
 	}
 
 	Mixin.parentNode(image);
 	Mixin.classList(image);
+	image.addEventListener = addEventListener.bind(image);
+	image.removeEventListener = removeEventListener.bind(image);
 
 	return image;
 };

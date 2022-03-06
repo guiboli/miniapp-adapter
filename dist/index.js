@@ -19,6 +19,9 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 
@@ -33,6 +36,9 @@ function _inherits(subClass, superClass) {
       writable: true,
       configurable: true
     }
+  });
+  Object.defineProperty(subClass, "prototype", {
+    writable: false
   });
   if (superClass) _setPrototypeOf(subClass, superClass);
 }
@@ -53,6 +59,19 @@ function _setPrototypeOf(o, p) {
   return _setPrototypeOf(o, p);
 }
 
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -64,29 +83,120 @@ function _assertThisInitialized(self) {
 function _possibleConstructorReturn(self, call) {
   if (call && (typeof call === "object" || typeof call === "function")) {
     return call;
+  } else if (call !== void 0) {
+    throw new TypeError("Derived constructors may only return object or undefined");
   }
 
   return _assertThisInitialized(self);
 }
 
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
+}
+
 function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
 }
 
 function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
 }
 
 function _iterableToArray(iter) {
-  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+}
+
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+  return arr2;
 }
 
 function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance");
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+  if (!it) {
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
+      var i = 0;
+
+      var F = function () {};
+
+      return {
+        s: F,
+        n: function () {
+          if (i >= o.length) return {
+            done: true
+          };
+          return {
+            done: false,
+            value: o[i++]
+          };
+        },
+        e: function (e) {
+          throw e;
+        },
+        f: F
+      };
+    }
+
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var normalCompletion = true,
+      didErr = false,
+      err;
+  return {
+    s: function () {
+      it = it.call(o);
+    },
+    n: function () {
+      var step = it.next();
+      normalCompletion = step.done;
+      return step;
+    },
+    e: function (e) {
+      didErr = true;
+      err = e;
+    },
+    f: function () {
+      try {
+        if (!normalCompletion && it.return != null) it.return();
+      } finally {
+        if (didErr) throw err;
+      }
+    }
+  };
 }
 
 var performance;
@@ -246,12 +356,11 @@ function classList(obj) {
   obj.classList.toggle = noop;
 }
 function copyProperties(target, source) {
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+  var _iterator = _createForOfIteratorHelper(Object.getOwnPropertyNames(source)),
+      _step;
 
   try {
-    for (var _iterator = Object.getOwnPropertyNames(source)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
       var key = _step.value;
 
       if (key !== 'constructor' && key !== 'prototype' && key !== 'name') {
@@ -260,26 +369,15 @@ function copyProperties(target, source) {
       }
     }
   } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
+    _iterator.e(err);
   } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-        _iterator["return"]();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+    _iterator.f();
   }
 }
 
 var _events = new WeakMap();
 
-var EventTarget =
-/*#__PURE__*/
-function () {
+var EventTarget = /*#__PURE__*/function () {
   function EventTarget() {
     _classCallCheck(this, EventTarget);
 
@@ -354,17 +452,17 @@ function () {
   return EventTarget;
 }();
 
-var Node =
-/*#__PURE__*/
-function (_EventTarget) {
+var Node = /*#__PURE__*/function (_EventTarget) {
   _inherits(Node, _EventTarget);
+
+  var _super = _createSuper(Node);
 
   function Node() {
     var _this;
 
     _classCallCheck(this, Node);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Node).call(this));
+    _this = _super.call(this);
     _this.childNodes = [];
     return _this;
   }
@@ -405,17 +503,17 @@ function (_EventTarget) {
   return Node;
 }(EventTarget);
 
-var Element =
-/*#__PURE__*/
-function (_Node) {
+var Element = /*#__PURE__*/function (_Node) {
   _inherits(Element, _Node);
+
+  var _super = _createSuper(Element);
 
   function Element() {
     var _this;
 
     _classCallCheck(this, Element);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Element).call(this));
+    _this = _super.call(this);
     _this.className = '';
     _this.children = [];
     return _this;
@@ -446,10 +544,10 @@ function (_Node) {
   return Element;
 }(Node);
 
-var HTMLElement =
-/*#__PURE__*/
-function (_Element) {
+var HTMLElement = /*#__PURE__*/function (_Element) {
   _inherits(HTMLElement, _Element);
+
+  var _super = _createSuper(HTMLElement);
 
   function HTMLElement() {
     var _this;
@@ -459,7 +557,7 @@ function (_Element) {
 
     _classCallCheck(this, HTMLElement);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(HTMLElement).call(this));
+    _this = _super.call(this);
     _this.className = '';
     _this.children = [];
     _this.focus = noop;
@@ -479,7 +577,7 @@ function (_Element) {
     return _this;
   }
 
-  return HTMLElement;
+  return _createClass(HTMLElement);
 }(Element);
 
 // import { HTMLCanvasElement, CanvasRenderingContext2D, WebGLRenderingContext } from './constructor'
@@ -522,13 +620,16 @@ function registerCanvas() {
   if (_canvasMap.has(id)) {
     _canvas = _canvasMap.get(id);
   } else {
-    canvas.type = 'canvas';
     var element = new HTMLElement('canvas');
-    copyProperties(canvas, element); // 拷贝实例属性
 
-    copyProperties(canvas.constructor.prototype, EventTarget.prototype); // 拷贝EventTarget原型属性
+    if (!canvas.tagName || canvas.tagName.toUpperCase() != 'CANVAS') {
+      canvas.type = 'canvas';
+      copyProperties(canvas, element); // 拷贝实例属性
 
-    copyProperties(canvas.constructor.prototype, HTMLElement.prototype); // 拷贝HTMLElement原型属性
+      copyProperties(canvas.constructor.prototype, EventTarget.prototype); // 拷贝EventTarget原型属性
+
+      copyProperties(canvas.constructor.prototype, HTMLElement.prototype); // 拷贝HTMLElement原型属性
+    }
 
     _canvasMap.set(id, canvas);
 
@@ -1182,7 +1283,7 @@ function getCanvasComputedStyle(canvas) {
   return style;
 }
 
-var Event = function Event(type) {
+var Event = /*#__PURE__*/_createClass(function Event(type) {
   _classCallCheck(this, Event);
 
   this.cancelBubble = false;
@@ -1193,7 +1294,7 @@ var Event = function Event(type) {
   this.stopPropagation = noop;
   this.type = type;
   this.timeStamp = Date.now();
-};
+});
 
 var location = {
   href: 'app.js',
@@ -1203,6 +1304,26 @@ var location = {
   }
 };
 
+function addEventListener(type, listener) {
+  var _this = this;
+
+  if (typeof listener !== 'function') {
+    return;
+  }
+
+  this['on' + type] = function () {
+    var event = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    console.log("[app debug] ~ file: Image.js ~ line 10 ~ addEventListener ~ event", event);
+    listener.call(_this, event);
+  };
+}
+
+function removeEventListener(type, listener) {
+  if (this['on' + type] === listener) {
+    this['on' + type] = null;
+  }
+}
+
 function Image() {
   var canvas = _canvas;
 
@@ -1210,7 +1331,7 @@ function Image() {
     throw new Error('please register a canvas');
   }
 
-  var image = canvas.createImage(); // image.__proto__.__proto__.__proto__ = new HTMLImageElement();
+  var image = canvas.createImage();
 
   if (!('tagName' in image)) {
     image.tagName = 'IMG';
@@ -1218,50 +1339,52 @@ function Image() {
 
   parentNode(image);
   classList(image);
+  image.addEventListener = addEventListener.bind(image);
+  image.removeEventListener = removeEventListener.bind(image);
   return image;
 }
 
-var DocumentElement =
-/*#__PURE__*/
-function (_HTMLElement) {
+var DocumentElement = /*#__PURE__*/function (_HTMLElement) {
   _inherits(DocumentElement, _HTMLElement);
+
+  var _super = _createSuper(DocumentElement);
 
   function DocumentElement() {
     _classCallCheck(this, DocumentElement);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(DocumentElement).call(this, 'html', 0));
+    return _super.call(this, 'html', 0);
   }
 
-  return DocumentElement;
+  return _createClass(DocumentElement);
 }(HTMLElement);
 
-var Body =
-/*#__PURE__*/
-function (_HTMLElement) {
+var Body = /*#__PURE__*/function (_HTMLElement) {
   _inherits(Body, _HTMLElement);
+
+  var _super = _createSuper(Body);
 
   function Body() {
     _classCallCheck(this, Body);
 
     // 为了性能, 此处不按照标准的DOM层级关系设计
     // 将 body 设置为 0级, parent元素为null
-    return _possibleConstructorReturn(this, _getPrototypeOf(Body).call(this, 'body', 0));
+    return _super.call(this, 'body', 0);
   }
 
-  return Body;
+  return _createClass(Body);
 }(HTMLElement);
 
-var TouchEvent =
-/*#__PURE__*/
-function (_Event) {
+var TouchEvent = /*#__PURE__*/function (_Event) {
   _inherits(TouchEvent, _Event);
+
+  var _super = _createSuper(TouchEvent);
 
   function TouchEvent(type) {
     var _this;
 
     _classCallCheck(this, TouchEvent);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(TouchEvent).call(this, type));
+    _this = _super.call(this, type);
     _this.touches = [];
     _this.targetTouches = [];
     _this.changedTouches = [];
@@ -1270,9 +1393,9 @@ function (_Event) {
     return _this;
   }
 
-  return TouchEvent;
+  return _createClass(TouchEvent);
 }(Event);
-var Touch = function Touch(touch) {
+var Touch = /*#__PURE__*/_createClass(function Touch(touch) {
   _classCallCheck(this, Touch);
 
   // CanvasTouch{identifier, x, y}
@@ -1285,7 +1408,7 @@ var Touch = function Touch(touch) {
   this.clientY = touch.clientY || touch.y;
   this.screenX = this.pageX;
   this.screenY = this.pageY;
-}; // wx.onTouchStart(eventHandlerFactory('touchstart'))
+}); // wx.onTouchStart(eventHandlerFactory('touchstart'))
 // wx.onTouchMove(eventHandlerFactory('touchmove'))
 // wx.onTouchEnd(eventHandlerFactory('touchend'))
 // wx.onTouchCancel(eventHandlerFactory('touchcancel'))
@@ -1514,17 +1637,17 @@ function _isRelativePath(url) {
   return !/^(http|https|ftp|wxfile):\/\/.*/i.test(url);
 }
 
-var XMLHttpRequest =
-/*#__PURE__*/
-function (_EventTarget) {
+var XMLHttpRequest = /*#__PURE__*/function (_EventTarget) {
   _inherits(XMLHttpRequest, _EventTarget);
+
+  var _super = _createSuper(XMLHttpRequest);
 
   function XMLHttpRequest() {
     var _this;
 
     _classCallCheck(this, XMLHttpRequest);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(XMLHttpRequest).call(this));
+    _this = _super.call(this);
     /*
      * TODO 这一批事件应该是在 XMLHttpRequestEventTarget.prototype 上面的
      */
@@ -1873,15 +1996,15 @@ var _cancelAnimationFrame = _canvas ? _canvas.cancelAnimationFrame : noop; //TOD
 var AudioContext = null;
 var webkitAudioContext = null;
 
-function addEventListener(type, listener) {
+function addEventListener$1(type, listener) {
   document.addEventListener(type, listener);
 }
 
-function removeEventListener(type, listener) {
+function removeEventListener$1(type, listener) {
   document.removeEventListener(type, listener);
 }
 
 var arrayBufferToBase64 = wx.arrayBufferToBase64 || noop;
 var base64ToArrayBuffer = wx.base64ToArrayBuffer || noop;
 
-export { AudioContext, Element, HTMLElement, Image, TouchEvent, noop as VRFrameData, XMLHttpRequest, _canvasMap, addEventListener, alert, arrayBufferToBase64, base64ToArrayBuffer, blur, _cancelAnimationFrame as cancelAnimationFrame, _canvas as canvas, clearCanvas, devicePixelRatio, document$1 as document, focus, getComputedStyle, innerHeight, innerWidth, location, navigator, ontouchend, ontouchmove, ontouchstart, performance$1 as performance, registerCanvas, removeEventListener, _requestAnimationFrame as requestAnimationFrame, screen, scrollBy, scrollTo, scrollX, scrollY, touchEventHandlerFactory, unregisterCanvas, webkitAudioContext };
+export { AudioContext, Element, HTMLElement, Image, TouchEvent, noop as VRFrameData, XMLHttpRequest, _canvasMap, addEventListener$1 as addEventListener, alert, arrayBufferToBase64, base64ToArrayBuffer, blur, _cancelAnimationFrame as cancelAnimationFrame, _canvas as canvas, clearCanvas, devicePixelRatio, document$1 as document, focus, getComputedStyle, innerHeight, innerWidth, location, navigator, ontouchend, ontouchmove, ontouchstart, performance$1 as performance, registerCanvas, removeEventListener$1 as removeEventListener, _requestAnimationFrame as requestAnimationFrame, screen, scrollBy, scrollTo, scrollX, scrollY, touchEventHandlerFactory, unregisterCanvas, webkitAudioContext };
