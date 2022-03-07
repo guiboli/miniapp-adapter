@@ -1,5 +1,6 @@
 import * as Mixin from './util/mixin'
 import { _canvas } from './Canvas'
+import HTMLImageElement from './HTMLImageElement';
 
 function addEventListener(type, listener) {
 	if (typeof listener !== 'function') {
@@ -28,10 +29,11 @@ export default function Image() {
 		image.tagName = 'IMG'
 	}
 
+	image.__WEAPP_IMG__ = true;
+
 	Mixin.parentNode(image);
 	Mixin.classList(image);
 	image.addEventListener = addEventListener.bind(image);
 	image.removeEventListener = removeEventListener.bind(image);
-
 	return image;
 };

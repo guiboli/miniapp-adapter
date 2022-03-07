@@ -1304,6 +1304,20 @@ var location = {
   }
 };
 
+var HTMLImageElement = /*#__PURE__*/function (_HTMLElement) {
+  _inherits(HTMLImageElement, _HTMLElement);
+
+  var _super = _createSuper(HTMLImageElement);
+
+  function HTMLImageElement() {
+    _classCallCheck(this, HTMLImageElement);
+
+    return _super.call(this, 'img');
+  }
+
+  return _createClass(HTMLImageElement);
+}(HTMLElement);
+
 function addEventListener(type, listener) {
   var _this = this;
 
@@ -1336,6 +1350,7 @@ function Image() {
     image.tagName = 'IMG';
   }
 
+  image.__WEAPP_IMG__ = true;
   parentNode(image);
   classList(image);
   image.addEventListener = addEventListener.bind(image);
@@ -1880,7 +1895,7 @@ XMLHttpRequest.LOADING = 3;
 XMLHttpRequest.DONE = 4;
 
 var _wx$getSystemInfoSync$2 = wx.getSystemInfoSync(),
-    platform$2 = _wx$getSystemInfoSync$2.platform; // export { default as HTMLImageElement } from './HTMLImageElement'
+    platform$2 = _wx$getSystemInfoSync$2.platform;
 // export { default as localStorage } from './localStorage'
 // export { default as Symbol } from './Symbol'
 // export { default as WebSocket } from './WebSocket'
@@ -2006,4 +2021,4 @@ function removeEventListener$1(type, listener) {
 var arrayBufferToBase64 = wx.arrayBufferToBase64 || noop;
 var base64ToArrayBuffer = wx.base64ToArrayBuffer || noop;
 
-export { AudioContext, Element, HTMLElement, Image, TouchEvent, noop as VRFrameData, XMLHttpRequest, _canvasMap, addEventListener$1 as addEventListener, alert, arrayBufferToBase64, base64ToArrayBuffer, blur, _cancelAnimationFrame as cancelAnimationFrame, _canvas as canvas, clearCanvas, devicePixelRatio, document$1 as document, focus, getComputedStyle, innerHeight, innerWidth, location, navigator, ontouchend, ontouchmove, ontouchstart, performance$1 as performance, registerCanvas, removeEventListener$1 as removeEventListener, _requestAnimationFrame as requestAnimationFrame, screen, scrollBy, scrollTo, scrollX, scrollY, touchEventHandlerFactory, unregisterCanvas, webkitAudioContext };
+export { AudioContext, Element, HTMLElement, HTMLImageElement, Image, TouchEvent, noop as VRFrameData, XMLHttpRequest, _canvasMap, addEventListener$1 as addEventListener, alert, arrayBufferToBase64, base64ToArrayBuffer, blur, _cancelAnimationFrame as cancelAnimationFrame, _canvas as canvas, clearCanvas, devicePixelRatio, document$1 as document, focus, getComputedStyle, innerHeight, innerWidth, location, navigator, ontouchend, ontouchmove, ontouchstart, performance$1 as performance, registerCanvas, removeEventListener$1 as removeEventListener, _requestAnimationFrame as requestAnimationFrame, screen, scrollBy, scrollTo, scrollX, scrollY, touchEventHandlerFactory, unregisterCanvas, webkitAudioContext };
